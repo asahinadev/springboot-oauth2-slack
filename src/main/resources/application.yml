@@ -1,0 +1,29 @@
+server:
+  port: 9002
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          slack:
+            provider:                 "slack"
+            client-name:              "Slack"
+            client-id:                "[env]"
+            client-secret:            "[env]"
+            redirect-uri:             "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: "authorization_code"
+            client-authentication-method: "post"
+            scope:            - admin
+            - client
+            - identify 
+        provider:          slack:
+            authorization-uri:   "https://slack.com/oauth/authorize" 
+            token-uri:           "https://slack.com/api/oauth.access"
+            user-info-uri:       "https://slack.com/api/users.identity"
+            user-name-attribute: "user_id"
+
+logging:
+  level:
+    com.example: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
