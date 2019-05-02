@@ -1,4 +1,4 @@
-package com.example.spring.slack.oauth2.interceptor;
+package com.example.spring.oauth2;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

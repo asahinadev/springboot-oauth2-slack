@@ -1,5 +1,14 @@
 server:
   port: 9002
+  ssl:
+    key-store:          "classpath:keystore.p12"
+    key-store-password: "12345678"
+    key-store-type:     "PKCS12"
+    key-alias:          "tomcat"
+
+# env settings
+# spring.security.oauth2.client.registration.slack.client-id
+# spring.security.oauth2.client.registration.slack.client-secret
 
 spring:
   security:
@@ -16,12 +25,17 @@ spring:
             client-authentication-method: "post"
             scope:            - admin
             - client
-            - identify 
+            - identify
+#           - identity.basic
+#           - identity.email
+#           - identity.avatar
+#           - identity.team
         provider:          slack:
             authorization-uri:   "https://slack.com/oauth/authorize" 
             token-uri:           "https://slack.com/api/oauth.access"
             user-info-uri:       "https://slack.com/api/users.identity"
             user-name-attribute: "user_id"
+            user-info-authentication-method: "get"
 
 logging:
   level:

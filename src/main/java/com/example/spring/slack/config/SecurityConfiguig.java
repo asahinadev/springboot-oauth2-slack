@@ -1,25 +1,22 @@
 package com.example.spring.slack.config;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.client.userinfo.CustomUserTypesOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.DelegatingOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.web.client.RestTemplate;
 
-import com.example.spring.slack.oauth2.service.SlackUserService;
-import com.example.spring.slack.oauth2.token.AccessTokenResponseClient;
+import com.example.spring.oauth2.CustomOAuth2AccessTokenResponseHttpMessageConverter;
+import com.example.spring.oauth2.LoggingClientHttpRequestInterceptor;
+import com.example.spring.slack.oauth2.user.SlackUser;
 
 @Configuration
 @EnableWebSecurity
@@ -52,12 +49,6 @@ public class SecurityConfiguig
 	}
 
 	@Override
-	protected void configure(AuthenticationManagerBuilder auth)
-			throws Exception {
-		super.configure(auth);
-	}
-
-	@Override
 	protected void configure(HttpSecurity http)
 			throws Exception {
 		super.configure(http);
@@ -71,43 +62,31 @@ public class SecurityConfiguig
 
 		http.oauth2Login()
 
-				// 認証エンドポイント
-				.authorizationEndpoint()
-				.and()
-
-				// リダイレクトエンドポイント
-				.redirectionEndpoint()
-				.and()
-
-				// トークンエンドポイント
+				// アクセストークンエンドポイント
 				.tokenEndpoint()
-				.accessTokenResponseClient(new AccessTokenResponseClient())
+				.accessTokenResponseClient(accessTokenResponseClient())
 				.and()
 
 				// ユーザー情報エンドポイント
 				.userInfoEndpoint()
-				.userService(userService());
+				.customUserType(SlackUser.class, "slack");
 
 	}
 
-	private DelegatingOAuth2UserService<OAuth2UserRequest, OAuth2User> userService() {
-		Map<String, Class<? extends OAuth2User>> customUser = new HashMap<>();
+	OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
+		DefaultAuthorizationCodeTokenResponseClient client = new DefaultAuthorizationCodeTokenResponseClient();
 
-		List<OAuth2UserService<OAuth2UserRequest, OAuth2User>> userServices = new ArrayList<>();
+		RestTemplate restTemplate = new RestTemplate(Arrays.asList(
+				new FormHttpMessageConverter(),
+				new CustomOAuth2AccessTokenResponseHttpMessageConverter()));
 
-		// Slack 専用
-		userServices.add(new SlackUserService());
+		restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+		restTemplate.setInterceptors(Arrays.asList(new LoggingClientHttpRequestInterceptor()));
 
-		// Custom UserService 
-		if (customUser.isEmpty() == false) {
-			userServices.add(new CustomUserTypesOAuth2UserService(customUser));
-		}
+		client.setRestOperations(restTemplate);
 
-		// Default UserService
-		userServices.add(new DefaultOAuth2UserService());
+		return client;
 
-		// 作成
-		return new DelegatingOAuth2UserService<>(userServices);
 	}
 
 }

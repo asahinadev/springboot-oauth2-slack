@@ -44,6 +44,10 @@ public class SlackUser
 		return String.valueOf(getUser().get("id"));
 	}
 
+	public String getEmail() {
+		return String.valueOf(getUser().get("email"));
+	}
+
 	@Override
 	public List<GrantedAuthority> getAuthorities() {
 		return Arrays.asList(
@@ -58,9 +62,12 @@ public class SlackUser
 
 		attributes.put("team", getTeam());
 		attributes.put("user", getUser());
-		attributes.putAll(extra);
 
 		return Collections.unmodifiableMap(attributes);
 	}
 
+	@Override
+	public String toString() {
+		return getAttributes().toString();
+	}
 }
