@@ -62,6 +62,14 @@ public class SecurityConfiguig
 
 		http.oauth2Login()
 
+				// 認証エンドポイント
+				.authorizationEndpoint()
+				.and()
+
+				// リダイレクトエンドポイント
+				.redirectionEndpoint()
+				.and()
+
 				// アクセストークンエンドポイント
 				.tokenEndpoint()
 				.accessTokenResponseClient(accessTokenResponseClient())
