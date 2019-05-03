@@ -11,8 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 
 	private final ClientHttpResponse response;
@@ -21,34 +25,38 @@ public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 	private byte[] body;
 
 	BufferingClientHttpResponseWrapper(ClientHttpResponse response) {
+		Assert.notNull(response, "ClientHttpResponse");
+		log.debug("ClientHttpResponse {}", response);
 		this.response = response;
 	}
 
 	@Override
 	public HttpStatus getStatusCode() throws IOException {
+		log.debug("status {}", response.getStatusCode());
 		return this.response.getStatusCode();
 	}
 
 	@Override
 	public int getRawStatusCode() throws IOException {
+		log.debug("status {}", response.getRawStatusCode());
 		return this.response.getRawStatusCode();
 	}
 
 	@Override
 	public String getStatusText() throws IOException {
+		log.debug("status {}", response.getStatusText());
 		return this.response.getStatusText();
 	}
 
 	@Override
 	public HttpHeaders getHeaders() {
+		log.debug("header {}", response.getHeaders());
 		return this.response.getHeaders();
 	}
 
 	@Override
 	public InputStream getBody() throws IOException {
 		if (this.body == null) {
-			System.out.println(getHeaders());
-			// [Cache-Control:"private", Content-Type:"application/json; charset=utf-8", Content-Encoding:"gzip", Access-Control-Allow-Origin:"*", Access-Control-Allow-Methods:"GET, POST", Access-Control-Allow-Credentials:"false", X-Content-Type-Options:"nosniff", Date:"Sat, 20 Apr 2019 14:01:13 GMT", Content-Length:"365"]
 			List<String> encoding = this.getHeaders().get(HttpHeaders.CONTENT_ENCODING);
 			if (encoding == null || encoding.isEmpty()) {
 				this.body = StreamUtils.copyToByteArray(this.response.getBody());
@@ -59,6 +67,7 @@ public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 				throw new IllegalStateException(encoding.get(0));
 			}
 		}
+		log.debug("body {}", body);
 		return new ByteArrayInputStream(this.body);
 	}
 
