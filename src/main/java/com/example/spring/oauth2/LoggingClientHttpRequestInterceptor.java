@@ -18,13 +18,13 @@ public class LoggingClientHttpRequestInterceptor
 	public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
 			throws IOException {
 
-		log.debug("parameter => {}", request.getHeaders());
-		log.debug("body      => {}", new String(body, StandardCharsets.UTF_8));
+		log.debug("header   => {}", request.getHeaders());
+		log.debug("body     => {}", new String(body, StandardCharsets.UTF_8));
 
 		BufferingClientHttpResponseWrapper response;
 		response = new BufferingClientHttpResponseWrapper(execution.execute(request, body));
 
-		log.debug("status => {}", response.getStatusCode());
+		log.debug("status   => {}", response.getStatusCode());
 		log.debug("response => {}", response.getBodyText());
 
 		return response;
