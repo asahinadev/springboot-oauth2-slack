@@ -3,6 +3,7 @@ package com.example.spring.oauth2;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -26,7 +27,6 @@ public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 
 	BufferingClientHttpResponseWrapper(ClientHttpResponse response) {
 		Assert.notNull(response, "ClientHttpResponse");
-		log.debug("ClientHttpResponse {}", response);
 		this.response = response;
 	}
 
@@ -38,13 +38,11 @@ public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 
 	@Override
 	public int getRawStatusCode() throws IOException {
-		log.debug("status {}", response.getRawStatusCode());
 		return this.response.getRawStatusCode();
 	}
 
 	@Override
 	public String getStatusText() throws IOException {
-		log.debug("status {}", response.getStatusText());
 		return this.response.getStatusText();
 	}
 
@@ -60,14 +58,28 @@ public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
 			List<String> encoding = this.getHeaders().get(HttpHeaders.CONTENT_ENCODING);
 			if (encoding == null || encoding.isEmpty()) {
 				this.body = StreamUtils.copyToByteArray(this.response.getBody());
-			} else if (encoding.get(0).equals("gzip")) {
-				// GZIP
-				this.body = StreamUtils.copyToByteArray(new GZIPInputStream(this.response.getBody()));
 			} else {
-				throw new IllegalStateException(encoding.get(0));
+				switch (encoding.get(0)) {
+
+				case "gzip":
+				case "x-gzip":
+					// LZ77
+					this.body = StreamUtils.copyToByteArray(new GZIPInputStream(this.response.getBody()));
+					break;
+
+				case "identity":
+				case "br":
+					log.warn("現在未実装です。");
+					throw new UnsupportedEncodingException(encoding.get(0));
+
+				case "compress":
+				default:
+					log.error("実装予定はありません");
+					throw new UnsupportedEncodingException(encoding.get(0));
+				}
 			}
 		}
-		log.debug("body {}", body);
+		log.debug("body {}", new String(body, StandardCharsets.UTF_8));
 		return new ByteArrayInputStream(this.body);
 	}
 
