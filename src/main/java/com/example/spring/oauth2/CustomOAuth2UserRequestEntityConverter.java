@@ -1,26 +1,18 @@
 package com.example.spring.oauth2;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.net.*;
+import java.util.*;
+import java.util.Map.*;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
-import org.springframework.security.oauth2.core.AuthenticationMethod;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.http.*;
+import org.springframework.security.oauth2.client.registration.*;
+import org.springframework.security.oauth2.client.userinfo.*;
+import org.springframework.security.oauth2.core.*;
+import org.springframework.security.oauth2.core.endpoint.*;
+import org.springframework.util.*;
+import org.springframework.web.util.*;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.*;
 
 @Slf4j
 public class CustomOAuth2UserRequestEntityConverter
@@ -69,7 +61,7 @@ public class CustomOAuth2UserRequestEntityConverter
 			request = new RequestEntity<>(headers, httpMethod, uri);
 		} else if (new AuthenticationMethod("json").equals(authenticationMethod)) {
 			headers.setBearerAuth(userRequest.getAccessToken().getTokenValue());
-			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			Map<String, Object> json = new HashMap<>();
 			for (Entry<String, List<String>> entry : formParameters.entrySet()) {

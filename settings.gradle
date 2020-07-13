@@ -3,4 +3,4 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
-rootProject.name = 'spring-oauth2-slack'
+rootProject.name = 'springboot-oauth2-slack'
